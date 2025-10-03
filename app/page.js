@@ -10,6 +10,17 @@ import Sidebar from "./components/Sidebar";
 import { api } from "./lib/mockApi";
 import { sortTasksByDueDate, filterTasks } from "./lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import AuthGuard from "@/components/AuthGuard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState([]);
@@ -19,6 +30,8 @@ export default function TasksPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
   const [filters, setFilters] = useState({
     projectId: null,
     tagIds: null,
@@ -106,12 +119,19 @@ export default function TasksPage() {
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
+  const handleDeleteTask = (taskId) => {
+    setTaskToDelete(taskId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+
     try {
-      const { error } = await api.deleteTask(taskId);
+      const { error } = await api.deleteTask(taskToDelete);
       if (error) throw new Error(error);
 
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      setTasks((prev) => prev.filter((t) => t.id !== taskToDelete));
       toast({
         title: "Success",
         description: "Task deleted successfully!",
@@ -122,6 +142,9 @@ export default function TasksPage() {
         description: "Failed to delete task. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setTaskToDelete(null);
     }
   };
 
@@ -173,10 +196,11 @@ export default function TasksPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar stats={stats} />
+    <AuthGuard>
+      <div className="flex h-screen bg-background">
+        <Sidebar stats={stats} />
 
-      <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -237,6 +261,29 @@ export default function TasksPage() {
         tags={tags}
         isLoading={formLoading}
       />
-    </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the task.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteTask}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Task
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </div>
+    </AuthGuard>
   );
 }
