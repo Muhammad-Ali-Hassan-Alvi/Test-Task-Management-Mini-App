@@ -41,31 +41,49 @@ export default function TaskForm({
   });
 
   useEffect(() => {
-    if (task) {
-      setFormData({
-        title: task.title,
-        description: task.description,
-        projectId: task.projectId.toString(),
-        tagIds: task.tagIds,
-        dueDate: task.dueDate,
-        status: task.status,
-      });
-    } else {
-      setFormData({
-        title: "",
-        description: "",
-        projectId: "",
-        tagIds: [],
-        dueDate: "",
-        status: "todo",
-      });
+    if (open) {
+      if (task) {
+        setFormData({
+          title: task.title || "",
+          description: task.description || "",
+          projectId: task.projectId ? task.projectId.toString() : "",
+          tagIds: task.tagIds || [],
+          dueDate: task.dueDate || "",
+          status: task.status || "todo",
+        });
+      } else {
+        setFormData({
+          title: "",
+          description: "",
+          projectId: "",
+          tagIds: [],
+          dueDate: "",
+          status: "todo",
+        });
+      }
     }
   }, [task, open]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.title.trim()) {
+      return;
+    }
+    
+    if (!formData.projectId) {
+      return;
+    }
+    
+    if (!formData.dueDate) {
+      return;
+    }
+    
     onSubmit({
       ...formData,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
       projectId: Number.parseInt(formData.projectId),
     });
   };

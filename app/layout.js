@@ -2,6 +2,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/hooks/use-auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,10 +28,12 @@ export default function RootLayout({ children }) {
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <ToastProvider>
-          {children}
-          <Toaster />
-        </ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+            <Toaster />
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );
