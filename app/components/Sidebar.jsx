@@ -1,9 +1,12 @@
 "use client";
 
-import { LayoutDashboard, CheckSquare, FolderKanban } from "lucide-react";
+import { LayoutDashboard, CheckSquare, FolderKanban, LogOut, User } from "lucide-react";
 import { cn } from "../lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
 
 export default function Sidebar({ stats }) {
+  const { user, logout } = useAuth();
   return (
     <aside className="w-64 border-r border-border bg-sidebar p-6 flex flex-col gap-6">
       <div>
@@ -48,8 +51,8 @@ export default function Sidebar({ stats }) {
         </a>
       </nav>
 
-      {stats && (
-        <div className="mt-auto space-y-4">
+      <div className="mt-auto space-y-4">
+        {stats && (
           <div className="p-4 bg-sidebar-accent rounded-lg">
             <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
               Overview
@@ -75,8 +78,35 @@ export default function Sidebar({ stats }) {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+        
+        {user && (
+          <div className="p-4 border border-border rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-primary-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-sidebar-foreground truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-sidebar-foreground/60 truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full" 
+              onClick={logout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }
